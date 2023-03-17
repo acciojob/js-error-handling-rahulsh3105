@@ -1,4 +1,3 @@
-//your code here
 class OutOfRangeError extends Error {
   constructor(msg) {
     super(msg);
@@ -13,25 +12,48 @@ class InvalidExprError extends Error {
   }
 }
 
+function isOperator(char) {
+  return ["+", "-", "*", "/"].includes(char);
+}
+
+function isInteger(str) {
+  return /^\d+$/.test(str);
+}
+
 function evalString(expr) {
-  // check for invalid operators
-  if (expr.match(/[\+\-\*\/]{2,}/)) {
-    throw new InvalidExprError("Expression should not have an invalid combination of operators");
+  let prevChar = null;
+
+  for (let i = 0; i < expr.length; i++) {
+    const char = expr[i];
+
+    if (char === " ") {
+      // skip spaces
+      continue;
+    } else if (isOperator(char)) {
+      // check for invalid operator combination
+      if (prevChar !== null && isOperator(prevChar)) {
+        throw new InvalidExprError(
+          "Expression should not have an invalid combination of operators"
+        );
+      }
+    } else if (!isInteger(char)) {
+      // check for invalid character
+      throw new OutOfRangeError(
+        "Expression should only consist of integers and +-/* characters"
+      );
+    }
+
+    prevChar = char;
   }
 
   // check for invalid starting operator
-  if (expr.match(/^[\+\*\/]/)) {
+  if (isOperator(expr[0])) {
     throw new SyntaxError("Expression should not start with invalid operator");
   }
 
   // check for invalid ending operator
-  if (expr.match(/[\+\*\/\-]$/)) {
+  if (isOperator(expr[expr.length - 1])) {
     throw new SyntaxError("Expression should not end with invalid operator");
-  }
-
-  // check for invalid characters
-  if (!expr.match(/^[\d\s\+\-\*\/]*$/)) {
-    throw new OutOfRangeError("Expression should only consist of integers and +-/* characters");
   }
 
   // evaluate the expression
